@@ -19,5 +19,8 @@
   "bugs": {
     "url": "https://github.com/jsbuzz/redux-signal/issues"
   },
-  "homepage": "https://github.com/jsbuzz/redux-signal#readme"
+  "homepage": "https://github.com/jsbuzz/redux-signal#readme",
+  "dependencies": {
+    "react": "^16.13.1"
+  }
 }
