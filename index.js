@@ -1,63 +1,78 @@
 import { useEffect, useState } from "react";
-
-const actionListeners = {};
+import { useStore } from "react-redux";
 
 const thunkRX = /.*=>.*dispatch.*=>/i;
 
+const thunkKey = (thunkFn) => thunkFn.toString();
+
 const isThunk = (fn) => !!fn.toString().match(thunkRX);
 const asArray = (a) => (Array.isArray(a) ? a : [a]);
-const asKey = (str) => (typeof str === "function" ? str().toString() : str);
+const asKey = (actionKey) =>
+  typeof actionKey === "function" ? thunkKey(actionKey()) : actionKey;
 const actionKey = (action) =>
-  typeof action === "function" ? action.toString() : action.type;
+  typeof action === "function" ? thunkKey(action) : action.type;
 
-// redux middleware that will call the action listeners
-export const actionListener = () => (next) => (action) => {
-  const key = actionKey(action);
-  const listeners = actionListeners[key];
-  if (listeners) {
-    listeners.forEach((listener) => listener(action));
-  }
-  return next(action);
+export const createActionListener = () => {
+  const context = {};
+
+  return {
+    // redux middleware that will call the action listeners
+    actionListener: () => (next) => (action) => {
+      const key = actionKey(action);
+      const listeners = context.store._actionListeners[key];
+      if (listeners) {
+        listeners.forEach((listener) => listener(action));
+      }
+      if (action._stopPropagation) return;
+
+      return next(action);
+    },
+
+    // there is no other way to access the store on the listener level
+    setStore: (store) => {
+      context.store = store;
+    },
+  };
 };
 
 const processListeners = (listeners, eventCallback) => {
   listeners.reduce((a, c) => {
-    if (typeof c === "function" && !isThunk(c)) {
-      a.forEach((e) => {
-        const key = asKey(e);
-        eventCallback(key, c);
-      });
-      return [];
+    if (typeof c !== "function" || isThunk(c)) {
+      return [...a, c];
     }
-    return [...a, c];
+    a.forEach((e) => eventCallback(asKey(e), c));
+    return [];
   }, []);
 };
 
 // hook for setting listeners on actions
 export function useActionListeners(...listeners) {
+  const store = useStore();
+  if (!store._actionListeners) {
+    store._actionListeners = {};
+  }
   useEffect(() => {
     processListeners(listeners, (event, callback) => {
-      const eventListeners = actionListeners[event];
+      const eventListeners = store._actionListeners[event];
       if (eventListeners) {
         eventListeners.push(callback);
       } else {
-        actionListeners[event] = [callback];
+        store._actionListeners[event] = [callback];
       }
     });
 
     return function cleanup() {
       processListeners(listeners, (event, callback) => {
-        const eventListeners = actionListeners[event];
+        const eventListeners = store._actionListeners[event];
         eventListeners.splice(eventListeners.indexOf(callback), 1);
       });
     };
-    // eslint-disable-next-line
   }, []);
 }
 
 // hook for a standard fetch operation with pending and error states
-export function useFetchState({
-  fetch,
+export function usePendingState({
+  pending,
   success,
   failure,
   failureHandler = (e) => e,
@@ -68,7 +83,7 @@ export function useFetchState({
   });
 
   useActionListeners(
-    ...asArray(fetch),
+    ...asArray(pending),
     () =>
       setState({
         pending: true,
@@ -93,18 +108,29 @@ export function useFetchState({
   return [state.pending, state.error];
 }
 
-// hook as an experiment
-// modifies the thunk and makes it trigger the pending state
-export const withPendingState = (thunk) => (...done) => {
-  const [loading, setLoading] = useState(false);
+// hook for transitions
+export const useTransitions = (
+  transitionStates,
+  transitionReducer,
+  stopPropagation = []
+) => {
+  const [state, setState] = useState({});
 
-  useActionListeners(...done, () => setLoading(false));
+  let listeners = [];
+  Object.keys(transitionStates).forEach((transition) => {
+    listeners = [
+      ...listeners,
+      ...asArray(transitionStates[transition]),
+      (action) => {
+        setState(transitionReducer(transition, action));
+        if (stopPropagation.includes(action.type)) {
+          action._stopPropagation = true;
+        }
+      },
+    ];
+  });
 
-  return [
-    loading,
-    (...a) => {
-      setLoading(true);
-      return thunk(...a);
-    },
-  ];
+  useActionListeners(...listeners);
+
+  return state;
 };

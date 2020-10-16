@@ -1,5 +1,5 @@
 {
-  "name": "redux-signal-hook",
+  "name": "redux-transitions",
   "version": "0.1.0",
   "description": "Simple Action listener library for redux and react",
   "main": "index.js",
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jsbuzz/redux-signal.git"
+    "url": "git+https://github.com/jsbuzz/redux-transitions.git"
   },
   "keywords": [
     "redux",
@@ -17,10 +17,11 @@
   "author": "Matyas Buczko",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/jsbuzz/redux-signal/issues"
+    "url": "https://github.com/jsbuzz/redux-transitions/issues"
   },
-  "homepage": "https://github.com/jsbuzz/redux-signal#readme",
+  "homepage": "https://github.com/jsbuzz/redux-transitions#readme",
   "dependencies": {
-    "react": "^16.13.1"
+    "react": "^16.13.1",
+    "react-redux": "^7.2.1"
   }
 }
