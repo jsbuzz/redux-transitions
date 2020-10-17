@@ -1,9 +1,14 @@
 # redux-transitions
+
 A simple Action listener library for redux and react.
+
+The motivation behind the library is to keep your global state clean and simple. Temporary states can be produced as part of the transition between two valid application states, but representing these temporary states can be messy inside your store.
+
+The most typical example is pending and error states that occur when you are accessing data from an API or other unstable source. I would argue that in 99% of the cases temporary errors and pending states should not be represented in the redux store as they are not real application state. We can infer these temporary states from the action dispatched on the store without polluting the store itself.
 
 ## Getting started
 
-First you need to add the middleware to your redux store. Unfortunately Redux doesn't allow native access to the store itself for middlewares so to get around this we need to create an instance of the action listener and manually attach the store.
+First you need to add the middleware to your redux store. Unfortunately Redux doesn't allow native access to the store itself for middleware so to get around this we need to create an instance of the action listener and manually attach the store.
 
 This is done to make the solution compatible with multiple stores in the same application. This way we can scope the action listeners on the store itself.
 
@@ -32,7 +37,7 @@ export default store;
 
 ## Using the hooks
 
-The library provides three hooks to interact with redux actions. They are going from very generic to specific to fit all usecases.
+The library provides three hooks to interact with redux actions. They are going from very generic to specific to fit all use cases.
 
 ### useActionListeners
 
@@ -62,7 +67,7 @@ export const HookedComponent = () => {
 
 ### useTransitions
 
-This is a more specialised hook for reducing a state from actions dispatched on the store. It expects two arguments, the first one is the list of transitionStates, the second is a reducer function that will produce the state.
+This is a more specialized hook for reducing a state from actions dispatched on the store. It expects two arguments, the first one is the list of transitionStates, the second is a reducer function that will produce the state.
 
 Think about the temporary states your component can be in and pair the actions that will mark that state. Example for fetching data from an API:
 
@@ -119,8 +124,8 @@ export const FileUpload = () => {
     uploadReducer
   );
   // ...
-  
-  
+
+
 export const DataFetcher = () => {
   const dispatch = useDispatch();
   const fetchMessage = "click to fetch data";
@@ -130,7 +135,7 @@ export const DataFetcher = () => {
 
   // this is reduced from actions triggered as local state
   const { isFetching, fetchError } = useTransitions(fetchStates, fetchReducer);
-  
+
   return (
     <div className="data-fetcher">
       <button disabled={isFetching} onClick={() => dispatch(fetchData())}>
@@ -145,12 +150,13 @@ export const DataFetcher = () => {
 
 ### usePendingState
 
-To cover the 90% of usecases there is also a very spcific hook for simple processes with the three most commonly used states:
-  - pending
-  - success
-  - error
-  
-Using this hook is easier that setting up the states and the reducer ecery time you are fetching a different piece of response from an API. Usage as simple as this:
+To cover the 90% of use cases there is also a very specific hook for simple processes with the three most commonly used states:
+
+- pending
+- success
+- error
+
+Using this hook is easier that setting up the states and the reducer every time you are fetching a different piece of response from an API. Usage as simple as this:
 
 ```
 const [isFetching, fetchError] = usePendingState({
@@ -161,6 +167,7 @@ const [isFetching, fetchError] = usePendingState({
 ```
 
 The full example:
+
 ```
 export const SimpleDataFetcher = () => {
   const dispatch = useDispatch();
