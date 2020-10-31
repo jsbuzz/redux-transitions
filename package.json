@@ -1,11 +1,10 @@
 {
   "name": "redux-transitions",
-  "version": "0.2.0",
+  "version": "0.3.1",
   "description": "Simple Action listener library for redux and react",
-  "main": "index.js",
-  "type": "module",
+  "main": "dist/main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "webpack"
   },
   "repository": {
     "type": "git",
@@ -23,6 +22,12 @@
   "homepage": "https://github.com/jsbuzz/redux-transitions#readme",
   "dependencies": {
     "react": "^16.13.1",
-    "react-redux": "^7.2.1"
+    "react-redux": "^7.2.1",
+    "react-dom": "^16.13.1",
+    "redux": "^4.0.5"
+  },
+  "devDependencies": {
+    "webpack": "^5.3.2",
+    "webpack-cli": "^4.1.0"
   }
 }
