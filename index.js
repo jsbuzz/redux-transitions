@@ -1,16 +1,21 @@
 import { useEffect, useState } from "react";
 import { useStore } from "react-redux";
 
+const ACTION_LISTENERS = "_actionListeners";
 const thunkRX = /.*=>.*dispatch.*=>/i;
 
 const thunkKey = (thunkFn) => thunkFn.toString();
 
 const isThunk = (fn) => !!fn.toString().match(thunkRX);
 const asArray = (a) => (Array.isArray(a) ? a : [a]);
-const asKey = (actionKey) =>
-  typeof actionKey === "function" ? thunkKey(actionKey()) : actionKey;
 const actionKey = (action) =>
   typeof action === "function" ? thunkKey(action) : action.type;
+const actionTypeKey = (actionType) =>
+  typeof actionType === "function" ? thunkKey(actionType()) : actionType;
+
+// you can use this property in your actions to mark them
+// so the middleware will not propagate them to your reducers
+export const STOP_PROPAGATION = "_stopPropagation";
 
 export const createActionListener = () => {
   const context = {};
@@ -19,11 +24,12 @@ export const createActionListener = () => {
     // redux middleware that will call the action listeners
     actionListener: () => (next) => (action) => {
       const key = actionKey(action);
-      const listeners = context.store._actionListeners[key];
+      const listeners = context.store[ACTION_LISTENERS][key];
       if (listeners) {
         listeners.forEach((listener) => listener(action));
       }
-      if (action._stopPropagation) return;
+
+      if (action[STOP_PROPAGATION]) return;
 
       return next(action);
     },
@@ -35,12 +41,14 @@ export const createActionListener = () => {
   };
 };
 
-const processListeners = (listeners, eventCallback) => {
-  listeners.reduce((a, c) => {
-    if (typeof c !== "function" || isThunk(c)) {
-      return [...a, c];
+const processListeners = (listeners, actionCallback) => {
+  listeners.reduce((actions, current) => {
+    if (typeof current !== "function" || isThunk(current)) {
+      return [...actions, current];
     }
-    a.forEach((e) => eventCallback(asKey(e), c));
+    actions.forEach((actionType) =>
+      actionCallback(actionTypeKey(actionType), current)
+    );
     return [];
   }, []);
 };
@@ -48,23 +56,23 @@ const processListeners = (listeners, eventCallback) => {
 // hook for setting listeners on actions
 export function useActionListeners(...listeners) {
   const store = useStore();
-  if (!store._actionListeners) {
-    store._actionListeners = {};
+  if (!store[ACTION_LISTENERS]) {
+    store[ACTION_LISTENERS] = {};
   }
   useEffect(() => {
     processListeners(listeners, (event, callback) => {
-      const eventListeners = store._actionListeners[event];
-      if (eventListeners) {
-        eventListeners.push(callback);
+      const actionListeners = store[ACTION_LISTENERS][event];
+      if (actionListeners) {
+        actionListeners.push(callback);
       } else {
-        store._actionListeners[event] = [callback];
+        store[ACTION_LISTENERS][event] = [callback];
       }
     });
 
     return function cleanup() {
       processListeners(listeners, (event, callback) => {
-        const eventListeners = store._actionListeners[event];
-        eventListeners.splice(eventListeners.indexOf(callback), 1);
+        const actionListeners = store[ACTION_LISTENERS][event];
+        actionListeners.splice(actionListeners.indexOf(callback), 1);
       });
     };
   }, []);
@@ -109,11 +117,7 @@ export function usePendingState({
 }
 
 // hook for transitions
-export const useTransitions = (
-  transitionStates,
-  transitionReducer,
-  stopPropagation = []
-) => {
+export const useTransitions = (transitionStates, transitionReducer) => {
   const [state, setState] = useState({});
 
   let listeners = [];
@@ -121,12 +125,7 @@ export const useTransitions = (
     listeners = [
       ...listeners,
       ...asArray(transitionStates[transition]),
-      (action) => {
-        setState(transitionReducer(transition, action));
-        if (stopPropagation.includes(action.type)) {
-          action._stopPropagation = true;
-        }
-      },
+      (action) => setState(transitionReducer(transition, action)),
     ];
   });
 
