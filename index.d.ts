@@ -17,6 +17,10 @@ export function useTransitions<T>(
   transitionStates: TransitionStates,
   transitionReducer: TransitionReducer<T>
 ): T;
+export function mockTransition<T>(
+  transitionStates: TransitionStates,
+  transitionReducer: TransitionReducer<T>
+): (action: ListenerListItem) => T;
 
 export function usePendingState(
   pending: ListenerListItem | ListenerListItem[],

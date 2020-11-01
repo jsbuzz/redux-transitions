@@ -136,8 +136,22 @@ const useTransitions = (transitionStates, transitionReducer) => {
   return state;
 };
 
+// function to calculate a transition state from an action
+const mockTransition = (transitionStates, transitionReducer) => (
+  action
+) => {
+  const transition = Object.keys(transitionStates).find(
+    (transitionState) =>
+      asArray(transitionStates[transitionState]).includes(action) ||
+      asArray(transitionStates[transitionState]).includes(action.type)
+  );
+
+  return transitionReducer(transition, action);
+};
+
 exports.STOP_PROPAGATION = STOP_PROPAGATION;
 exports.createActionListener = createActionListener;
+exports.mockTransition = mockTransition;
 exports.useActionListeners = useActionListeners;
 exports.usePendingState = usePendingState;
 exports.useTransitions = useTransitions;

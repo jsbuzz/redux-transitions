@@ -131,3 +131,16 @@ export const useTransitions = (transitionStates, transitionReducer) => {
 
   return state;
 };
+
+// function to calculate a transition state from an action
+export const mockTransition = (transitionStates, transitionReducer) => (
+  action
+) => {
+  const transition = Object.keys(transitionStates).find(
+    (transitionState) =>
+      asArray(transitionStates[transitionState]).includes(action) ||
+      asArray(transitionStates[transitionState]).includes(action.type)
+  );
+
+  return transitionReducer(transition, action);
+};
