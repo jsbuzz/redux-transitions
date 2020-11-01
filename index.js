@@ -29,9 +29,7 @@ export const createActionListener = () => {
         listeners.forEach((listener) => listener(action));
       }
 
-      if (action[STOP_PROPAGATION]) return;
-
-      return next(action);
+      if (!action[STOP_PROPAGATION]) next(action);
     },
 
     // there is no other way to access the store on the listener level
