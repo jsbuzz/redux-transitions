@@ -116,7 +116,7 @@ export function usePendingState({
 
 // hook for transitions
 export const useTransitions = (transitionStates, transitionReducer) => {
-  const [state, setState] = useState({});
+  const [state, setState] = useState(transitionReducer());
 
   let listeners = [];
   Object.keys(transitionStates).forEach((transition) => {

@@ -120,7 +120,7 @@ function usePendingState({
 
 // hook for transitions
 const useTransitions = (transitionStates, transitionReducer) => {
-  const [state, setState] = react.useState({});
+  const [state, setState] = react.useState(transitionReducer());
 
   let listeners = [];
   Object.keys(transitionStates).forEach((transition) => {
