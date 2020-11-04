@@ -23,7 +23,7 @@ export const createActionListener = () => {
   return {
     // redux middleware that will call the action listeners
     actionListener: () => (next) => (action) => {
-      if (!context.store[ACTION_LISTENERS]) return;
+      if (!context.store[ACTION_LISTENERS]) return next(action);
 
       const key = actionKey(action);
       const listeners = context.store[ACTION_LISTENERS][key];

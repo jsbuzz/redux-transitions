@@ -1,6 +1,6 @@
 {
   "name": "redux-transitions",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "description": "Simple Action listener library for redux and react",
   "main": "dist/redux-transitions.js",
   "scripts": {
@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/jsbuzz/redux-transitions#readme",
   "dependencies": {
-    "react": "^16.13.1",
-    "react-redux": "^7.2.1"
+    "react": "^16.1.1",
+    "react-redux": "^7.1.1"
   }
 }
