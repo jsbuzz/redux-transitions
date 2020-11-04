@@ -6,9 +6,10 @@ var react = require('react');
 var reactRedux = require('react-redux');
 
 const ACTION_LISTENERS = "_actionListeners";
-const thunkRX = /.*=>.*dispatch.*=>/i;
+const thunkRX = /^([^=]+|\([^)]+\))[\s]*=>[\s]*([^=]+|\([^)]+\))[\s]*=>[\s]*|^function[\s]+[^(]+\([^)]*\)[\s]*{[\s]*return[\s]+function[\s]*\([^)]*\)/i;
 
-const thunkKey = (thunkFn) => thunkFn.toString();
+const thunkKey = (thunkFn) =>
+  (`${thunkFn.name}`.length > 3 && thunkFn.name) || thunkFn.toString();
 
 const isThunk = (fn) => !!fn.toString().match(thunkRX);
 const asArray = (a) => (Array.isArray(a) ? a : [a]);
