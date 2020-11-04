@@ -1,10 +1,10 @@
 # redux-transitions
 
-A simple Action listener library for redux and react.
-
 The motivation behind the library is to keep your global state clean and simple. Temporary states can be produced as part of the transition between two valid application states, but representing these temporary states can be messy inside your store.
 
-The most typical example is pending and error states that occur when you are accessing data from an API or other unstable source. I would argue that in 99% of the cases temporary errors and pending states should not be represented in the redux store as they are not real application state. We can infer these temporary states from the action dispatched on the store without polluting the store itself.
+The most typical example is pending and error states that occur when you are accessing data from an API or other unstable source. We can infer these temporary states from the action dispatched on the store without polluting the store itself.
+
+For examples and tests check out the demo project: [redux-transitions-demo](https://github.com/jsbuzz/redux-transitions-demo)
 
 ## Getting started
 
@@ -33,6 +33,20 @@ const store = createStore(
 setStore(store);
 
 export default store;
+```
+
+## Keeping actions from hitting the reducers
+
+Some actions will only be used to change the Transition states and by keeping them from hitting the redcuers we can avoid some re-renders. To do this you can just add a property to the action like in the following example:
+
+```
+import { STOP_PROPAGATION } from "redux-transitions";
+
+export const uploadError = (error) => ({
+  type: UPLOAD_FAILURE,
+  [STOP_PROPAGATION]: true,
+  error,
+});
 ```
 
 ## Using the hooks
