@@ -1,11 +1,11 @@
 export const STOP_PROPAGATION: string;
 
 export const createActionListener: () => {
-  actionListener: function;
-  setStore: function;
+  actionListener: () => void;
+  setStore: (store: object) => void;
 };
 
-export type ListenerListItem = string | function;
+export type ListenerListItem = string | (() => void);
 export function useActionListeners(...args: ListenerListItem[]): void;
 
 export interface TransitionStates {
@@ -26,5 +26,16 @@ export function usePendingState(
   pending: ListenerListItem | ListenerListItem[],
   success: ListenerListItem | ListenerListItem[],
   failure: ListenerListItem | ListenerListItem[],
-  failureHandler: function
+  failureHandler: (error: object) => any
 ): [boolean, any];
+
+export type Thunk = () => void;
+export interface ThunkApi {
+  withTransitionStates: (states: object | ((a: Thunk) => void)) => Thunk;
+}
+export function thunk(thunkFn: () => void): ThunkApi;
+
+export function useThunkReducer<T>(
+  thunk: Thunk,
+  reducer: TransitionReducer<T>
+): T;

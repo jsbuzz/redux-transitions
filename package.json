@@ -1,6 +1,6 @@
 {
   "name": "redux-transitions",
-  "version": "0.6.4",
+  "version": "0.7.1",
   "description": "Simple Action listener library for redux and react",
   "main": "dist/redux-transitions.js",
   "scripts": {
