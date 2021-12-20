@@ -1,52 +1,12 @@
 import { useEffect, useState } from "react";
 import { useStore } from "react-redux";
-
-const ACTION_LISTENERS = Symbol("actionListeners");
-const IS_THUNK = Symbol("is-thunk");
-const thunkRX = /^([^=]+|\([^)]+\))[\s]*=>[\s]*([^=]+|\([^)]+\))[\s]*=>[\s]*|^function[\s]*[^(]*\([^)]*\)[\s]*{[\s]*return[\s]+function[\s]*\([^)]*\)/i;
-
-const thunkKey = (thunkFn) =>
-  (`${thunkFn.name}`.length > 3 && thunkFn.name) || thunkFn.toString();
-
-const isThunk = (fn) => fn[IS_THUNK] || !!fn.toString().match(thunkRX);
-const asArray = (a) => (Array.isArray(a) ? a : [a]);
-const actionKey = (action) =>
-  typeof action === "function" ? thunkKey(action) : action.type;
-const actionTypeKey = (actionType) =>
-  typeof actionType === "function" ? thunkKey(actionType()) : actionType;
-
-// you can use this property in your actions to mark them
-// so the middleware will not propagate them to your reducers
-export const STOP_PROPAGATION = "_stopPropagation";
-export const defaultStates = {
-  pending: "pending",
-  success: "success",
-  failure: "failure",
-};
-
-export const createActionListener = () => {
-  const context = {};
-
-  return {
-    // redux middleware that will call the action listeners
-    actionListener: () => (next) => (action) => {
-      if (!context.store[ACTION_LISTENERS]) return next(action);
-
-      const key = actionKey(action);
-      const listeners = context.store[ACTION_LISTENERS][key];
-      if (listeners) {
-        listeners.forEach((listener) => listener(action));
-      }
-
-      if (!action[STOP_PROPAGATION]) next(action);
-    },
-
-    // there is no other way to access the store on the listener level
-    setStore: (store) => {
-      context.store = store;
-    },
-  };
-};
+import {
+  actionTypeKey,
+  asArray,
+  ACTION_LISTENERS,
+  defaultStates,
+  isThunk,
+} from "./domain";
 
 const processListeners = (listeners, actionCallback) => {
   listeners.reduce((actions, current) => {
@@ -140,31 +100,6 @@ export const useTransitions = (transitionStates, transitionReducer) => {
 
   return state;
 };
-
-// function to calculate a transition state from an action
-export const mockTransition = (transitionStates, transitionReducer) => (
-  action
-) => {
-  const transition = Object.keys(transitionStates).find(
-    (transitionState) =>
-      asArray(transitionStates[transitionState]).includes(action) ||
-      asArray(transitionStates[transitionState]).includes(action.type)
-  );
-
-  return transitionReducer(transition, action);
-};
-
-// mark a thunk so it can be identified as an Action
-export function thunk(thunkFn) {
-  thunkFn[IS_THUNK] = true;
-  thunkFn.withTransitionStates = (transitions) => {
-    thunkFn.transitions =
-      typeof transitions === "function" ? transitions(thunkFn) : transitions;
-
-    return thunkFn;
-  };
-  return thunkFn;
-}
 
 // simple reducer
 const defaultReducer = (state, error) => [

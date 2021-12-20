@@ -1,8 +1,8 @@
 {
   "name": "redux-transitions",
-  "version": "0.7.1",
+  "version": "0.7.4",
   "description": "Simple Action listener library for redux and react",
-  "main": "dist/redux-transitions.js",
+  "main": "redux-transitions.js",
   "scripts": {
     "build": "rollup -c rollup.config.js"
   },
